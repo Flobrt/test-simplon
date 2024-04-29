@@ -1,0 +1,38 @@
+version: '3.1'
+
+services:
+  data:
+    image: mariadb:latest
+    container_name: data
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - ./data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - backend
+
+  script:
+    build: .
+    container_name: script
+    depends_on:
+      data:
+        condition: service_healthy
+    networks:
+      - backend
+
+volumes:
+  data:
+
+networks:
+  backend:
+    driver: bridge
